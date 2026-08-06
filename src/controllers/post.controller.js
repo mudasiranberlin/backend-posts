@@ -113,8 +113,39 @@ const  updatePost= asyncHandler( async(req,res)=>{
 
 
 
+ // delete post 
+
+ const  deletePost= asyncHandler( async(req,res)=>{
+        const { id } = req.params;
+
+// findByIdAndDelete(id)	Delete using MongoDB _id
+// findOneAndDelete({condition})	Delete using any field
+
+
+
+    
+        if (!id) {
+            throw new ApiError(400,"not get the id")
+            
+        }
+        const post = await Post.findByIdAndDelete(
+            id)
+    if (!post) {
+        throw new ApiError(404, "Post not found");
+    }
+
+    
+    return res.status(200)
+    .json(new ApiResponse(200, post,"deleted sucessfully"))
+    
+    }
+ )
+
+
+
 export {
     createPost,
     getPosts,
-    updatePost
+    updatePost,
+    deletePost
 }
