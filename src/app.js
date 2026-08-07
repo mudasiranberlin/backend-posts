@@ -49,10 +49,13 @@ import userRouter from './routes/user.routes.js'
 
 import postRouter from './routes/post.routes.js'
 
+import videoRouter from './routes/video.routes.js'
 
 app.use("/api/v1/users",userRouter)
 
 app.use("/api/v1/posts",postRouter)
+
+app.use("/api/v1/video",videoRouter)
 
 
 

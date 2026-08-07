@@ -38,7 +38,8 @@ const createPost = asyncHandler(async (req, res) => {
 const getPosts = asyncHandler( async(req,res)=>{
 
     try {
-        const post = await await Post.find();
+        const post = await await Post.find().sort({name:-1});
+
         return res.status(201)
        .json(new ApiResponse(201, post,"All posts are getting sucessfully"))
 
@@ -49,6 +50,7 @@ const getPosts = asyncHandler( async(req,res)=>{
     
 
 } )
+
 
 //  const updatePost = asyncHandler(async(req,res)=>{
 
@@ -142,10 +144,44 @@ const  updatePost= asyncHandler( async(req,res)=>{
  )
 
 
+ // Now i want to use limits 
+ // Read ALl posts
+
+const limitpost = asyncHandler( async(req,res)=>{
+    const limit = 5;
+    const page = 3;
+    const skip = (page-1)*limit
+
+    try {
+        const total = await Post.countDocuments();
+        const post = await Post.find().sort({name:1}).skip(skip).limit(limit)
+
+        
+        console.log(total);
+        
+        return res.status(201)
+       .json(new ApiResponse(201, post,"All posts are getting sucessfully"))
+
+    } catch (error) {
+        console.log(error);  
+        
+    }
+    
+
+} )
+
+
+
+
+
+ // end limits 
+
+
 
 export {
     createPost,
     getPosts,
     updatePost,
-    deletePost
+    deletePost,
+    limitpost
 }

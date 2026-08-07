@@ -26,26 +26,25 @@ const uploadCloudinary = async (localFilePath) => {
   }
 }
 
+
 const deleteCloudinary = async (publicId) => {
-  try {
-    const result = await cloudinary.uploader.destroy(publicId, {
-      resource_type: 'video',
-      invalidate: true // Optional: clears cached copies from CDN
-    });
-    fs.unlinkSync(publicId);
-    return result;
+    try {
+        console.log("Public ID:", publicId);
 
-    console.log(result); // Outputs: { result: 'ok' }
+        const result = await cloudinary.uploader.destroy(publicId, {
+            resource_type: "video",
+            invalidate: true
+        });
 
-  } catch (error) {
-    fs.unlinkSync(localFilePath) //remove the locally saved temporary file as the upload operation got failed
-    return null;
-    console.error('Error deleting video:', error);
+        console.log("Result is here:", result);
 
+        return result;
 
-  }
-
-}
+    } catch (error) {
+        console.error("Error deleting video:", error);
+        return null;
+    }
+};
 
 export { uploadCloudinary, deleteCloudinary }
 
