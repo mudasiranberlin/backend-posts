@@ -25,7 +25,7 @@ const createPost = asyncHandler(async (req, res) => {
        
 
        return res.status(201)
-       .json(new ApiResponse(201, post,"Account details Updated sucessfully"))
+       .json(new ApiResponse(201, post,"Post created  sucessfully"))
 
       
         
@@ -40,7 +40,7 @@ const getPosts = asyncHandler( async(req,res)=>{
     try {
         const post = await await Post.find();
         return res.status(201)
-       .json(new ApiResponse(201, post,"Account details Updated sucessfully"))
+       .json(new ApiResponse(201, post,"All posts are getting sucessfully"))
 
     } catch (error) {
         console.log(error);  
@@ -106,7 +106,7 @@ const  updatePost= asyncHandler( async(req,res)=>{
 
     
     return res.status(200)
-    .json(new ApiResponse(200, post,"Account details Updated sucessfully"))
+    .json(new ApiResponse(200, post,"Post  Updated sucessfully"))
     
     }
  )
@@ -136,7 +136,7 @@ const  updatePost= asyncHandler( async(req,res)=>{
 
     
     return res.status(200)
-    .json(new ApiResponse(200, post,"deleted sucessfully"))
+    .json(new ApiResponse(200, post,"Post has been deleted sucessfully"))
     
     }
  )
