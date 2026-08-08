@@ -675,16 +675,8 @@ const getWatchHistory = asyncHandler(async (req, res) => {
     );
 });
 
-// pratice the code 
-
-
-
-
-
-
-
-
-
+// pratice the code  to get video also  
+//
 export  {
     registerUser,
     loginUser,

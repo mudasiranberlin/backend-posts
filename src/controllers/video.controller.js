@@ -14,6 +14,7 @@ import { deleteCloudinary, uploadCloudinary } from "../utils/cloudinary.js";
 const createVideo = asyncHandler(async (req, res) => {
     
         const {title,description}=req.body;
+        const userId = req.user._id;
         console.log(`Here is title ${title} and here is description ${description}`);
 
         console.log(`Here is title ${title} and here is description ${description}`);
@@ -53,6 +54,8 @@ const createVideo = asyncHandler(async (req, res) => {
 
        const video = await Video.create({
         title,
+        owner:userId,
+        views:0,
         description,
         isPublished,
         duration,
@@ -122,8 +125,73 @@ const createVideo = asyncHandler(async (req, res) => {
         );
 });
 
+   const searchVideo= asyncHandler (async (req,res)=>{
+       
+       const search = req.body.search
+        console.log(search);
+       if (!search) {
+           throw new ApiError(401,"Please search something ")
+           
+       }
+   
+       const titles = await Video.find({
+           $or:[
+               { username: { $regex: search, $options: "i" } },
+               { title: { $regex: search, $options: "i" } },
+               { description: { $regex: search, $options: "i" } }
+           ]
+       })
+   
+       return res.status(201)
+       .json(new ApiResponse(201,titles,"All search result"))
+   
+   })
+
+   const getUserVideoProfile = asyncHandler(async (req, res) => {
+
+    console.log("Mudasir");
+    
+
+    const {id } = req.params;
+
+     console.log(id);
+    if (id) {
+        throw new ApiError(400, "Username is missing");
+    }
+
+    const videos = await Video.aggregate([
+  {
+    '$lookup': {
+      'from': 'users', 
+      'localField': 'users_id', 
+      'foreignField': 'owner', 
+      'as': 'result'
+    }
+  }
+])
+
+    // 2. Find videos uploaded by this user
+    // const videos1 = await Video.find({id
+    // }).populate(
+    //     "owner",
+    //     "username fullname avatar"
+    // );
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            {
+                videos
+            },
+            "User videos fetched successfully"
+        )
+    );
+});
+
 export {
     createVideo,
     showvideo,
-    deleteVideo
+    deleteVideo,
+    searchVideo,
+    getUserVideoProfile
 }

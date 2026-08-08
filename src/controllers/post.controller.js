@@ -170,11 +170,50 @@ const limitpost = asyncHandler( async(req,res)=>{
 
 } )
 
-
-
-
-
  // end limits 
+
+
+// now lets use search by id and also serach by title 
+
+const searchid = asyncHandler( async(req,res)=>{
+    const {id} = req.params
+    if (!id) {
+        throw new ApiError(201,"Cannot find the id")
+    }
+    const search = await Post.findById(id)
+    if (!search) {
+        throw new ApiError(201,"Cannot find the id")
+    }
+     return res.status(201)
+       .json(new ApiResponse(201, search,"All posts are getting sucessfully"))
+} )
+
+
+// find already using by id 
+
+// now lets find using the title and description 
+
+const searchUsingTitle= asyncHandler (async (req,res)=>{
+    
+    const search = req.body.search
+     console.log(search);
+    if (!search) {
+        throw new ApiError(401,"Please search something ")
+        
+    }
+
+    const titles = await Post.find({
+        $or:[
+            { username: { $regex: search, $options: "i" } },
+            { title: { $regex: search, $options: "i" } },
+            { description: { $regex: search, $options: "i" } }
+        ]
+    })
+
+    return res.status(201)
+    .json(new ApiResponse(201,titles,"All search result"))
+
+})
 
 
 
@@ -183,5 +222,7 @@ export {
     getPosts,
     updatePost,
     deletePost,
-    limitpost
+    limitpost,
+    searchid,
+    searchUsingTitle
 }
