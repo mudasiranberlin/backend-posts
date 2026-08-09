@@ -38,6 +38,30 @@ const postcomment = asyncHandler(async(req,res)=>{
         );
 })
 
+        const showcomment = asyncHandler(async(req,res)=>{
+
+            console.log("Reached");
+            const {channelId}= req.params
+            if (!channelId) {
+                throw new ApiError(200,"Cannot find the id ")
+            }
+            const comment = await Comment.find({
+                video:channelId
+            })
+            return res
+        .status(201)
+        .json(
+            new ApiResponse(
+                201,
+                comment,
+                "Comment are here "
+            )
+        );
+        })
+        
+
+
 export{
-    postcomment
+    postcomment,
+    showcomment
 }
