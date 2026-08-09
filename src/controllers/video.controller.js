@@ -167,16 +167,15 @@ const createVideo = asyncHandler(async (req, res) => {
       'foreignField': 'owner', 
       'as': 'result'
     }
+  },
+  {
+    $addFields:{
+        owner:{
+            $first:"$result"
+        }
+    }
   }
 ])
-
-    // 2. Find videos uploaded by this user
-    // const videos1 = await Video.find({id
-    // }).populate(
-    //     "owner",
-    //     "username fullname avatar"
-    // );
-
     return res.status(200).json(
         new ApiResponse(
             200,
