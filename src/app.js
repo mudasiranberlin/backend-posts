@@ -55,6 +55,8 @@ import subscriptionRouter from './routes/subscription.routes.js'
 
 import commentRouter from './routes/comment.routes.js'
 
+import likeRouter from './routes/like.routes.js'
+
 app.use("/api/v1/users",userRouter)
 
 app.use("/api/v1/posts",postRouter)
@@ -66,6 +68,8 @@ app.use("/api/v1/subscription",subscriptionRouter)
 
 app.use("/api/v1/Comment",commentRouter)
 
+
+app.use("/api/v1/like",likeRouter)
 
 
 
