@@ -87,8 +87,12 @@ const channel = await User.aggregate([
 
 //TODO: toggle like on video
 const toggleVideoLike = asyncHandler(async (req, res) => {
+
     const {videoId} = req.params
     const userId = req.user?._id
+
+    console.log("Video",videoId);
+    
     if (!isValidObjectId(videoId)) {
         throw new ApiError(400,"Cant find the video id");
         
