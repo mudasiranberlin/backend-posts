@@ -12,8 +12,8 @@ const router = Router();
 
 router.route('/toggleVideoLike/:videoId').post(verfiyJWT,toggleVideoLike)
 router.route('/showcomment/:commentId').post(verfiyJWT,toggleCommentLike)
-router.route('/updatecomment/:id').patch(toggleTweetLike)
-router.route('/deletecomment/:id').delete(toggleVideoLike)
+router.route('/tweetlike/:tweetId').post(verfiyJWT,toggleTweetLike)
+router.route('/getLikedVideos').get(verfiyJWT,getLikedVideos) 
 
 
 export default router;
