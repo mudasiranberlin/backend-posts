@@ -11,7 +11,7 @@ const router = Router();
 
 
 router.route('/toggleVideoLike/:videoId').post(verfiyJWT,toggleVideoLike)
-router.route('/showcomment/:channelId').get(toggleCommentLike)
+router.route('/showcomment/:commentId').post(verfiyJWT,toggleCommentLike)
 router.route('/updatecomment/:id').patch(toggleTweetLike)
 router.route('/deletecomment/:id').delete(toggleVideoLike)
 
