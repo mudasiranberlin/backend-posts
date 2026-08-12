@@ -5,6 +5,7 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 import { User } from "../models/user.models.js"
 import { Tweet } from "../models/tweet.models.js"
 import { Like } from "../models/like.models.js"
+import {Comment} from "../models/comments.models.js"
 
 
 
@@ -40,15 +41,52 @@ const createTweet = asyncHandler(async (req, res) => {
                 );
 })
 const getUserTweets = asyncHandler(async (req, res) => {
+    const {id} = req.params
+    console.log("id",id);
+
+    const filter={}
+    filter.owner=id
+
+    console.log(filter);
+    
+    
      const userId = req.user._id
     // TODO: get user tweets
     if (!userId) {
         throw new ApiError(201,"Please eneter the Tweet");
     }
 
-    const gettweet = await Tweet.find({
-        owner:userId
-    })
+    //{owner:userId}
+    const gettweet = await Tweet.find(filter).populate("owner","avatar username").sort({createdAt:-1}).lean();
+
+    const get = await Tweet.aggregate([
+  // 1. Find tweets
+  {
+    $match: filter
+  },
+
+  // 2. Find likes belonging to each tweet
+  {
+    $lookup: {
+      from: "likes",
+      localField: "_id",
+      foreignField: "tweet",
+      as: "likes"
+    }
+  },
+
+  // 3. Find comments belonging to each tweet
+  {
+    $lookup: {
+      from: "comments",
+      localField: "_id",
+      foreignField: "tweet",
+      as: "comments"
+    }
+  }
+])
+
+
     return res
                 .status(200)
                 .json(

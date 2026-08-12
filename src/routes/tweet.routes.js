@@ -8,7 +8,7 @@ const router = Router();
 // router.route('/showcomment/:commentId').post(getUserTweets)
 
 router.route('/createTweet').post(verfiyJWT,createTweet)
-router.route('/getUserTweets').get(verfiyJWT,getUserTweets)
+router.route('/getUserTweets/:id').get(verfiyJWT,getUserTweets)
 router.route('/updateTweet/:Id').patch(verfiyJWT,updateTweet)
 router.route('/deleteTweet/:Id').delete(verfiyJWT,deleteTweet) 
 
