@@ -3,9 +3,12 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { Video } from "../models/video.models.js";
 import {upload} from "../middlewares/multer.middleware.js"
-
-import mongoose from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import { deleteCloudinary, uploadCloudinary } from "../utils/cloudinary.js";
+import { Like } from "../models/like.models.js";
+
+import { Subscription } from "../models/subscription.models.js";
+
 
 const createVideo = asyncHandler(async (req, res) => {
     
@@ -14,8 +17,6 @@ const createVideo = asyncHandler(async (req, res) => {
         console.log(`Here is title ${title} and here is description ${description}`);
 
         console.log(`Here is title ${title} and here is description ${description}`);
-        
-        const isPublished =true
 
        if (!title?.trim() || !description?.trim()) {
         throw new ApiError(
@@ -53,7 +54,7 @@ const createVideo = asyncHandler(async (req, res) => {
         owner:userId,
         views:0,
         description:description.trim(),
-        isPublished,
+        isPublished:true,
         duration,
         videoFile:videoFile.url,
         thumbnail:thumbnail.url
@@ -152,50 +153,263 @@ const createVideo = asyncHandler(async (req, res) => {
    
    })
 
+   /*
+   const getUserVideoProfile = asyncHandler(async (req, res) => {
+  const videoId = "6a7d45d975aac1fd8dd88c34"
+  if (!isValidObjectId(videoId)) {
+    throw new ApiError(400, "Invalid Video ID");
+  }
+
+  const video = await Video.findById(videoId).populate("owner", "username fullName avatar");
+  if (!video) {
+    throw new ApiError(404, "Video not found");
+  }
+
+  video.views += 1;
+  await video.save({ validateBeforeSave: false });
+
+  const videoObj = video.toObject();
+  videoObj.likesCount = await Like.countDocuments({ video: video._id });
+  videoObj.isLiked = req.user?._id ? !!(await Like.findOne({ video: video._id, likeBy: req.user._id })) : false;
+
+  if (videoObj.owner) {
+    videoObj.owner.subscribersCount = await Subscription.countDocuments({ channel: videoObj.owner._id });
+    videoObj.owner.isSubscribed = req.user?._id ? !!(await Subscription.findOne({ channel: videoObj.owner._id, subscriber: req.user._id })) : false;
+  }
+
+  res.status(200).json(
+    new ApiResponse(200, videoObj, "Video fetched successfully")
+  );
+});
+
+*/
+
    const getUserVideoProfile = asyncHandler(async (req, res) => {
 
-    console.log("Mudasir");
-    
-
-    const {id } = req.params;
-
-     console.log(id);
-    if (id) {
+    const {videoid} =req.params;
+    if (!isValidObjectId(videoid)) {
         throw new ApiError(400, "Username is missing");
     }
+    // const vides =await Video.findById(videoid).populate("owner","username fullName avatar");
 
-    const videos = await Video.aggregate([
+//     const videos = await Video.aggregate([
+//   {
+//     '$lookup': {
+//       'from': 'users', 
+//       'localField': 'users_id', 
+//       'foreignField': 'owner', 
+//       'as': 'result'
+//     }
+//   },
+//   {
+//     $lookup:{
+//                 from:"subscriptions",
+//                 localField:"_id",
+//                 foreignField:"channel",
+//                 as:"subscribers"
+//             }
+//   },
+//   {
+//     $lookup:{
+//                 from:"subscriptions",
+//                 localField:"_id",
+//                 foreignField:"subscriber",
+//                 as:"subscribedTo"
+
+//             }
+//   },
+
+//   {
+//             $addFields:{
+//                 subscribersCount:{
+//                     $size: "$subscribers"
+//                 },
+//                 channelSubscribedToCount:{
+//                     $size:"$subscribedTo" 
+//                 },
+
+//                 isSubscribed:{
+//                     $cond:{
+//                         if:{$in:[req.user?._id,"$subscribers.subscriber"]},
+//                         then:true,
+//                         else:false
+//                     }
+//                 }
+
+//             }
+//         },
+//   {
+//     $addFields:{
+//         owner:{
+//             $first:"$result"
+//         }
+//     }
+//   },
+//   {
+//             $project:{
+//             fullname:1,
+//             username:1,
+//             subscribersCount:1,
+//             isSubscribed:1,
+//             avatar:1,
+//             coverImage:1,
+//             email:1
+
+//         }
+//         }
+// ])
+
+
+const videosr = await Video.aggregate([
+  // Get owner
+
+  // Get likes
   {
-    '$lookup': {
-      'from': 'users', 
-      'localField': 'users_id', 
-      'foreignField': 'owner', 
-      'as': 'result'
+    $lookup: {
+      from: "likes",
+      localField: "_id",
+      foreignField: "video",
+      as: "likes"
+    }
+  },
+
+  // Get subscribers
+  {
+    $lookup: {
+      
+
+      from: "subscriptions",
+      localField: "owner",
+      foreignField: "channel",
+      as: "subscribers"
+    }
+  },
+
+  // Count both
+  {
+    $addFields: {
+      likesCount: { $size: "$likes" },
+      subscribersCount: { $size: "$subscribers" }
+    }
+  },
+
+  // Don't return the actual arrays
+  {
+    $project: {
+      likes: 0,
+      subscribers: 0
+    }
+  }
+]);
+
+
+const videoss = await Video.aggregate([
+    {
+    $lookup: {
+      from: "likes",
+      localField: "_id",
+      foreignField: "video",
+      as: "likes"
     }
   },
   {
-    $addFields:{
-        owner:{
-            $first:"$result"
-        }
+    $lookup: {
+      from: "likes",
+      localField: "_id",
+      foreignField: "video",
+      as: "likes"
+    }
+  },
+  {
+    $addFields: {
+      likesCount: { $size: "$likes" }
+    }
+  },
+  {
+    $project: {
+      likes: 0
     }
   }
+
 ])
+
+const videos = await Video.aggregate([
+  {
+    $lookup: {
+      from: "users",
+      localField: "users_id",
+      foreignField: "owner",
+      as: "user"
+    }
+  },
+  {
+    $lookup: {
+      from: "likes",
+      localField: "_id",
+      foreignField: "video",
+      as: "likes"
+    }
+  },
+  {
+    $addFields: {
+      likesCount: { $size: "$likes" }
+    }
+  },
+  {
+    $project: {
+      likes: 0
+    }
+  }
+]);
+
+
+
     return res.status(200).json(
         new ApiResponse(
             200,
             {
-                videos
+                videosr,
             },
             "User videos fetched successfully"
         )
     );
 });
 
+
+
+        const togglePublishStatus = asyncHandler(async(req,res)=>{
+            const {videoid} = req.params
+
+            // if (!isValidObjectId(videoid)) {
+            //     throw new ApiError(401,"Please enter the valid video id ")
+            // }
+            console.log("Reached",videoid);
+            const video = await Video.findById(videoid) 
+
+            console.log("here:",video);
+
+            console.log("Here is :",video.owner.toString());
+            console.log("Here is : ",req.user?._id.toString());
+
+            if (video.owner.toString() !== req.user?._id.toString()) {
+                throw new ApiError(401,"UnAuthorized Access")
+            }
+            
+            video.isPublished = !video.isPublished;
+            await video.save({ validateBeforeSave: false });
+
+            res.status(200)
+        .json(
+            new ApiResponse(200,video,"Published status sucessfully")
+        )
+        })
+        
+
 export {
-    createVideo,
+    createVideo, //created working perfect
+    togglePublishStatus,  //working perfect
+    deleteVideo, // working perfectly 
     showvideo,
-    deleteVideo,
     searchVideo,
     getUserVideoProfile
 }
