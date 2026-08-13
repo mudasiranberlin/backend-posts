@@ -20,7 +20,7 @@ router.route("/videos").post(
     createVideo);
 
 router.route('/show').get(showvideo);
-router.route('/deletevideo/:id').patch(deleteVideo);
+router.route('/deletevideo/:id').delete(verfiyJWT,deleteVideo);
 
 router.route('/serachvideo').get(verfiyJWT,searchVideo)
 

@@ -87,30 +87,36 @@ const createVideo = asyncHandler(async (req, res) => {
         throw new ApiError(400, "ID is required");
     }
 
+    // console.log("User:",req.user?._id.toString());
 
     // Get video details
     const video = await Video.findById(id);
 
-    if (!video) {
-        throw new ApiError(404, "Video not found");
-    }
+    if (video.owner.toString() !== req.user?._id.toString()) {
+    throw new ApiError(403, "Unauthorized to delete this video");
+  }
 
-
+  
     // Extract Cloudinary public_id from URL
-    const public_id = video.videoFile
+    const videoPublic = video.videoFile
+        .split("/")
+        .pop()
+        .split(".")[0];
+
+    const ThumbPublic = video.thumbnail
         .split("/")
         .pop()
         .split(".")[0];
 
 
-    console.log("Cloudinary public id:", public_id);
-
+    console.log("Cloudinary public id:", videoPublic);
+    console.log("Cloudinary public id of thumbnail:", ThumbPublic);
 
     // Delete from Cloudinary
-    await deleteCloudinary(public_id);
+    await deleteCloudinary(videoPublic);
+    await deleteCloudinary(ThumbPublic);
 
-
-    // Delete from MongoDB
+    // // Delete from MongoDB
     await Video.findByIdAndDelete(id);
 
 
