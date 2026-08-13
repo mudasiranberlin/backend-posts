@@ -7,10 +7,6 @@ import {upload} from "../middlewares/multer.middleware.js"
 import mongoose from "mongoose";
 import { deleteCloudinary, uploadCloudinary } from "../utils/cloudinary.js";
 
-
-
-
-
 const createVideo = asyncHandler(async (req, res) => {
     
         const {title,description}=req.body;
@@ -21,23 +17,23 @@ const createVideo = asyncHandler(async (req, res) => {
         
         const isPublished =true
 
-       if (!title || !description ||!isPublished) {
+       if (!title?.trim() || !description?.trim()) {
         throw new ApiError(
             400,
-            "All fields are required"
+            "All fields are required"   
         )}
         
         // video upload and thumbnail
 
-        const videoFileUpload = req.files?.videoFile[0]?.path;
+        const videoFileUpload = req.files?.videoFile?.[0]?.path;
 
-        const thumbnailUpload = req.files?.thumbnail[0]?.path;
+        const thumbnailUpload = req.files?.thumbnail?.[0]?.path;
     
     if (!videoFileUpload) {
-        throw new ApiError(400, "Avatar file is required")
+        throw new ApiError(400, "Video file is required")
     }
     if (!thumbnailUpload) {
-        throw new ApiError(400, "Avatar file is required")
+        throw new ApiError(400, "Thumnail file is required")
     }
 
     const videoFile = await uploadCloudinary(videoFileUpload)
@@ -49,23 +45,26 @@ const createVideo = asyncHandler(async (req, res) => {
     if (!thumbnail) {
         throw new ApiError(400, "Thumbnail file is required")
     }
-    const duration = videoFile.duration
+    const duration = videoFile.duration;
 
 
        const video = await Video.create({
-        title,
+        title:title.trim(),
         owner:userId,
         views:0,
-        description,
+        description:description.trim(),
         isPublished,
         duration,
         videoFile:videoFile.url,
         thumbnail:thumbnail.url
        });
 
+       const populatevideo = await Video.findById(video._id).populate("owner", "username avatar fullname");
        return res.status(201)
-       .json(new ApiResponse(201, video,"Video Uploaded  sucessfully"))
+       .json(new ApiResponse(201, populatevideo,"Video Uploaded  sucessfully"))
 });
+
+
     const showvideo = asyncHandler( async(req,res)=>{
     
         try {
