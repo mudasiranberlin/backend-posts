@@ -26,6 +26,6 @@ router.route('/publish/:videoid').patch(verfiyJWT,togglePublishStatus);
 
 router.route('/serachvideo').get(verfiyJWT,searchVideo)
 
-router.route('/getUser/:videoid').get(getUserVideoProfile)
+router.route('/getUser/:videoid').get(verfiyJWT,getUserVideoProfile)
 
 export default router;

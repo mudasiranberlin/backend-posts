@@ -192,74 +192,6 @@ const createVideo = asyncHandler(async (req, res) => {
     }
     // const vides =await Video.findById(videoid).populate("owner","username fullName avatar");
 
-//     const videos = await Video.aggregate([
-//   {
-//     '$lookup': {
-//       'from': 'users', 
-//       'localField': 'users_id', 
-//       'foreignField': 'owner', 
-//       'as': 'result'
-//     }
-//   },
-//   {
-//     $lookup:{
-//                 from:"subscriptions",
-//                 localField:"_id",
-//                 foreignField:"channel",
-//                 as:"subscribers"
-//             }
-//   },
-//   {
-//     $lookup:{
-//                 from:"subscriptions",
-//                 localField:"_id",
-//                 foreignField:"subscriber",
-//                 as:"subscribedTo"
-
-//             }
-//   },
-
-//   {
-//             $addFields:{
-//                 subscribersCount:{
-//                     $size: "$subscribers"
-//                 },
-//                 channelSubscribedToCount:{
-//                     $size:"$subscribedTo" 
-//                 },
-
-//                 isSubscribed:{
-//                     $cond:{
-//                         if:{$in:[req.user?._id,"$subscribers.subscriber"]},
-//                         then:true,
-//                         else:false
-//                     }
-//                 }
-
-//             }
-//         },
-//   {
-//     $addFields:{
-//         owner:{
-//             $first:"$result"
-//         }
-//     }
-//   },
-//   {
-//             $project:{
-//             fullname:1,
-//             username:1,
-//             subscribersCount:1,
-//             isSubscribed:1,
-//             avatar:1,
-//             coverImage:1,
-//             email:1
-
-//         }
-//         }
-// ])
-
-
 const videosr = await Video.aggregate([
   // Get owner
 
@@ -276,13 +208,11 @@ const videosr = await Video.aggregate([
   // Get subscribers
   {
     $lookup: {
-      
-
-      from: "subscriptions",
-      localField: "owner",
-      foreignField: "channel",
-      as: "subscribers"
-    }
+  from: "subscriptions",
+  localField: "owner",
+  foreignField: "subscriber",
+  as: "subscribers"
+}
   },
 
   // Count both
@@ -301,69 +231,6 @@ const videosr = await Video.aggregate([
     }
   }
 ]);
-
-
-const videoss = await Video.aggregate([
-    {
-    $lookup: {
-      from: "likes",
-      localField: "_id",
-      foreignField: "video",
-      as: "likes"
-    }
-  },
-  {
-    $lookup: {
-      from: "likes",
-      localField: "_id",
-      foreignField: "video",
-      as: "likes"
-    }
-  },
-  {
-    $addFields: {
-      likesCount: { $size: "$likes" }
-    }
-  },
-  {
-    $project: {
-      likes: 0
-    }
-  }
-
-])
-
-const videos = await Video.aggregate([
-  {
-    $lookup: {
-      from: "users",
-      localField: "users_id",
-      foreignField: "owner",
-      as: "user"
-    }
-  },
-  {
-    $lookup: {
-      from: "likes",
-      localField: "_id",
-      foreignField: "video",
-      as: "likes"
-    }
-  },
-  {
-    $addFields: {
-      likesCount: { $size: "$likes" }
-    }
-  },
-  {
-    $project: {
-      likes: 0
-    }
-  }
-]);
-
-
-
     return res.status(200).json(
         new ApiResponse(
             200,
