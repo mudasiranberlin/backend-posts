@@ -40,70 +40,45 @@ const toggleSubscription = asyncHandler(async (req, res) => {
 
 
 })
+const getUserChannelSubscribers = asyncHandler(async(req,res)=>{
 
-// return res.status(200)
-// .json(new ApiResponse(200, Subscription,"Account details Updated sucessfully"))
-
-/*
-const getUserChannelSubscribers = asyncHandler(async (req, res) => {
-    const {channelId} = req.params
-    if (!channelId) {
-         throw new ApiError(400, "You cannot subscribe to your own channel");
-    }
-    const userId = req.user?._id
-    console.log(channelId);
-    const sub = await Subscription.findOne({
-    subscriber: userId,
-    channel: channelId
-}).populate("subscriber","username avatar")
-
-    return res.status(200).json( new ApiResponse(200,sub,"fetched sucessfulyy"))
-    console.log("Hello");
-    
-})
-
-*/
-
-const getUserChannelSubscribers = asyncHandler(async (req, res) => {
-  const channelId = req.params.channelId || req.params.subscriberId;
+  const channelId = req.params.channelId
   if (!isValidObjectId(channelId)) {
-    throw new ApiError(400, "Invalid channel ID");
+    throw new ApiError(201,"Please enetr valid object id");
   }
-
+  console.log("channel",channelId);
   const subscribers = await Subscription.aggregate([
     {
-      $match: {
-        channel: new mongoose.Types.ObjectId(channelId),
-      },
+      $match:{
+        channel:new mongoose.Types.ObjectId(channelId)
+      }
+    },{
+      $lookup:{
+        from:"users",
+        localField:"subscriber",
+        foreignField:"_id",
+        as: "subscribe"
+      }
     },
     {
-      $lookup: {
-        from: "users",
-        localField: "subscriber",
-        foreignField: "_id",
-        as: "subscriberDetails",
-      },
-    },
-    {
-      $unwind: "$subscriberDetails",
-    },
-    {
-      $project: {
-        _id: "$subscriberDetails._id",
-        username: "$subscriberDetails.username",
-        fullName: "$subscriberDetails.fullName",
-        avatar: "$subscriberDetails.avatar",
-        createdAt: 1,
-      },
-    },
-  ]);
+       $unwind: "$subscribe"
+   },
+   {
+    $project:{
+      _id: "$subscribe._id",
+      username: "$subscribe.username",
+      avatar: "$subscribe.avatar",
+      createdAt:1
+    }
+   }
 
+  ])
   res
     .status(200)
     .json(new ApiResponse(200, subscribers, "Channel subscribers fetched successfully"));
-});
+})
 
 export {
-    toggleSubscription,
-    getUserChannelSubscribers
+    toggleSubscription,  //perfect
+    getUserChannelSubscribers //working perfect
 }
