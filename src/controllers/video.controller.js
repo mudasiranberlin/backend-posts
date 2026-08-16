@@ -154,37 +154,6 @@ const searchVideo = asyncHandler(async (req, res) => {
 
 })
 
-/*
-const getUserVideoProfile = asyncHandler(async (req, res) => {
-const videoId = "6a7d45d975aac1fd8dd88c34"
-if (!isValidObjectId(videoId)) {
- throw new ApiError(400, "Invalid Video ID");
-}
-
-const video = await Video.findById(videoId).populate("owner", "username fullName avatar");
-if (!video) {
- throw new ApiError(404, "Video not found");
-}
-
-video.views += 1;
-await video.save({ validateBeforeSave: false });
-
-const videoObj = video.toObject();
-videoObj.likesCount = await Like.countDocuments({ video: video._id });
-videoObj.isLiked = req.user?._id ? !!(await Like.findOne({ video: video._id, likeBy: req.user._id })) : false;
-
-if (videoObj.owner) {
- videoObj.owner.subscribersCount = await Subscription.countDocuments({ channel: videoObj.owner._id });
- videoObj.owner.isSubscribed = req.user?._id ? !!(await Subscription.findOne({ channel: videoObj.owner._id, subscriber: req.user._id })) : false;
-}
-
-res.status(200).json(
- new ApiResponse(200, videoObj, "Video fetched successfully")
-);
-});
-
-*/
-
 const getUserVideoProfile = asyncHandler(async (req, res) => {
 
     const { videoid } = req.params
@@ -192,9 +161,13 @@ const getUserVideoProfile = asyncHandler(async (req, res) => {
     console.log("video", videoid);
 
     if (!isValidObjectId(videoid)) {
-        throw new ApiError(400, "Username is missing");
+        throw new ApiError(400, "Invalid video ID");
     }
     const video = await Video.findById(videoid).populate("owner", "username fullName avatar");
+
+    if (!video) {
+        throw new ApiError(404, "Video not found");
+    }
     video.views += 1;
     await video.save({
         validateBeforeSave: false
@@ -207,44 +180,49 @@ const getUserVideoProfile = asyncHandler(async (req, res) => {
         video: video._id
     });
 
-    videoObj.isLiked = req.user?._id
-        ? !!(await Like.findOne({
+    if (req.user?._id) {
+
+        const like = await Like.findOne({
             video: video._id,
             likeBy: req.user._id
-        }))
-        : false;
+        });
 
-    await Like.findOne({
-        video: video._id,
-        likeBy: req.user._id
-    })
+        if (like) {
+            videoObj.isLiked = true;
+        } else {
+            videoObj.isLiked = false;
+        }
+
+    } else {
+
+        videoObj.isLiked = false;
+
+    }
     videoObj.owner.subscribersCount =
         await Subscription.countDocuments({
             channel: videoObj.owner._id
         });
 
-    videoObj.owner.isSubscribed =
-        req.user?._id
-            ? !!(await Subscription.findOne({
-                channel: videoObj.owner._id,
-                subscriber: req.user._id
-            }))
-            : false;
+    if (req.user?._id) {
 
+        const subscription = await Subscription.findOne({
+            channel: videoObj.owner._id,
+            subscriber: req.user._id
+        });
 
+        videoObj.owner.isSubscribed = subscription ? true : false;
 
+    } else {
 
+        videoObj.owner.isSubscribed = false;
 
-
+    }
 
     res.status(200)
         .json(
             new ApiResponse(200, videoObj, "Published status sucessfully")
         )
 })
-
-
-
 
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
@@ -281,5 +259,5 @@ export {
     deleteVideo, // working perfectly 
     showvideo,
     searchVideo,
-    getUserVideoProfile
+    getUserVideoProfile  //working perfectly
 }
