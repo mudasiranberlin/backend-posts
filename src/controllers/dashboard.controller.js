@@ -30,16 +30,15 @@ const getChannelStats = asyncHandler(async (req, res) => {
         }
     ])
 
-    const likes = await Like.countDocuments({
-        likedBy: userid
-    })
-
     const subscribe = await Subscription.countDocuments({
         channel: userid
     })
 
+    const totalViews = views[0]?.totalViews || 0;
+
     const userVideos = await Video.find({ owner: userid }).select("_id");
-  const videoIds = userVideos.map((v) => v._id);
+    const videoIds = userVideos.map((v) => v._id);
+    const totalLikes = await Like.countDocuments({ video: { $in: videoIds } });
 
     return res
         .status(201)
@@ -47,8 +46,10 @@ const getChannelStats = asyncHandler(async (req, res) => {
             new ApiResponse(
                 201,
                 {
-                    userVideos,
-                    videoIds
+                    video,
+                    totalViews,
+                    subscribe,
+                    totalLikes
                 },
                 "Comment has been deleted "
             )
