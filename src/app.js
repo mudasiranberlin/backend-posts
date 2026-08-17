@@ -61,6 +61,8 @@ import tweetRouter from './routes/tweet.routes.js'
 
 import dashRouter from './routes/dashboard.routes.js'
 
+import playlistRouter from "./routes/playlist.routes.js"
+
 app.use("/api/v1/users",userRouter)
 
 app.use("/api/v1/posts",postRouter)
@@ -74,6 +76,8 @@ app.use("/api/v1/Comment",commentRouter)
 app.use("/api/v1/like",likeRouter)
 
 app.use("/api/v1/tweet",tweetRouter)
+
+app.use("/api/v1/playlist", playlistRouter)
 
 app.use("/api/v1/dash",dashRouter)
 
